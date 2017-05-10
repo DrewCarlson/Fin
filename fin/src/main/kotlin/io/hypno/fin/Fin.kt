@@ -15,29 +15,36 @@ interface Action {
 /**
  * Middleware can be placed before or after a primary reducer.
  */
-interface Middleware<in S : State, in A : Action, out R> : Reducer<S, A, R>
+interface Middleware<in S, in A, out R> : Reducer<S, A, R>
 
 /**
  * A reducer handles producing a new state from an
  * action in order to receive a new state.
  */
-interface Reducer<in S : State, in A : Action, out R> {
+interface Reducer<in S, in A, out R> {
     fun reduce(state: S, action: A): R
 }
 
 /**
  * A handler to delegate actions to a StateProcessor.
+ * Your dispatcher can control Action flow in any way
+ * so long as no two Actions would process at once.
  */
-interface Dispatcher<in A : Action> {
+interface Dispatcher<in A> {
     fun dispatch(action: A)
 }
 
 /**
  * A way to dispatch actions, apply middleware, and reduce the state.
  */
-interface StateProcessor<S : State, A : Action, R, M : Middleware<S, A, R>>
+interface StateProcessor<S, A, R, M>
     : Reducer<S, A, R>, Dispatcher<A> {
 
+    /**
+     * Processing occurs when your Dispatcher is provided
+     * a new Action and the Dispatcher determines that
+     * it is an appropriate to process a new action.
+     */
     fun process(state: S, action: A)
 
     fun addMiddleware(pre: M.(S, A) -> R,
